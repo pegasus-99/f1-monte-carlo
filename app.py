@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import plotly.utils
 import json
 import os
-from f1_simulation_2025 import F1MonteCarloSimulation2025
+from f1_realistic_simulation import F1RealisticSimulation
 import io
 import base64
 import matplotlib
@@ -11,7 +11,7 @@ matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
 
 app = Flask(__name__)
-f1_sim = F1MonteCarloSimulation2025()
+f1_sim = F1RealisticSimulation()
 
 @app.route('/')
 def index():
@@ -155,18 +155,17 @@ def driver_stats(driver_name):
     stats = {
         'name': driver.name,
         'team': driver.team,
-        'base_speed': driver.base_speed,
+        'raw_pace': driver.raw_pace,
         'consistency': driver.consistency,
-        'qualifying_pace': driver.qualifying_pace,
-        'race_pace': driver.race_pace,
-        'reliability': driver.reliability,
+        'tire_management': driver.tire_management,
+        'race_craft': driver.race_craft,
+        'mental_strength': driver.mental_strength,
+        'physical_fitness': driver.physical_fitness,
         'experience': driver.experience,
         'current_form': driver.current_form,
         'championship_position': driver.championship_position,
-        'points': driver.points,
-        'recent_performance': driver.recent_performance,
-        'car_news_factor': driver.car_news_factor,
-        'engine_news_factor': driver.engine_news_factor
+        'championship_points': driver.championship_points,
+        'recent_results': driver.recent_results
     }
     
     return jsonify(stats)
@@ -181,12 +180,12 @@ def track_info(track_name):
     
     info = {
         'name': track_name,
-        'type': track['type'],
-        'overtaking_difficulty': track['overtaking_difficulty'],
-        'technical_demand': track['technical_demand'],
-        'weather_sensitivity': track['weather_sensitivity'],
-        'tire_wear': track['tire_wear'],
-        'season_round': track.get('season_round', 0)
+        'track_type': track.track_type,
+        'overtaking_difficulty': track.overtaking_difficulty,
+        'technical_demand': track.technical_demand,
+        'weather_sensitivity': track.weather_sensitivity,
+        'tire_wear_rate': track.tire_wear_rate,
+        'base_qualifying_time': track.base_qualifying_time
     }
     
     return jsonify(info)
