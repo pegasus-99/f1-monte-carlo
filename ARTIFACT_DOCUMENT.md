@@ -3,7 +3,7 @@
 
 **Version:** 2.0  
 **Date:** July 12, 2025  
-**Author:** Development Team  
+**Author:** Parth  
 **Project:** F1 Monte Carlo Simulation System  
 
 ---
@@ -588,4 +588,4 @@ This artifact document serves as a complete reference for all project deliverabl
 - **Version History**: 1.0 (Initial), 2.0 (Current)
 - **Review Cycle**: Quarterly
 - **Next Review**: October 2025
-- **Approval**: Project Manager 
+- **Approval**: Parth 

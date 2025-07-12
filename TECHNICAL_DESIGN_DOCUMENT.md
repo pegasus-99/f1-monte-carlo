@@ -3,7 +3,7 @@
 
 **Version:** 2.0  
 **Date:** July 12, 2025  
-**Author:** Development Team  
+**Author:** Parth  
 **Project:** F1 Monte Carlo Simulation System  
 
 ---
@@ -343,4 +343,4 @@ The technical design prioritizes accuracy, performance, and user experience whil
 - **Version History**: 1.0 (Initial), 2.0 (Current)
 - **Review Cycle**: Quarterly
 - **Next Review**: October 2025
-- **Approval**: Development Team Lead 
+- **Approval**: Parth 
