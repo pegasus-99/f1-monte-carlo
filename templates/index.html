@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Monte Carlo Race Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #e74c3c, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+        }
+        
+        .control-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #545b62);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+        
+        .loading i {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .progress {
+            height: 8px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border-radius: 10px;
+        }
+        
+        .driver-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border-left: 4px solid #007bff;
+        }
+        
+        .driver-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .driver-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .driver-team {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .driver-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: #007bff;
+        }
+        
+        .news-factors {
+            margin-top: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .factor-positive {
+            color: #28a745;
+        }
+        
+        .factor-negative {
+            color: #dc3545;
+        }
+        
+        .factor-neutral {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="main-container">
+                    <!-- Header -->
+                    <div class="header">
+                        <h1><i class="fas fa-flag-checkered"></i> F1 2025 Monte Carlo Race Predictor</h1>
+                        <p>Predict F1 2025 race winners using advanced Monte Carlo simulations with car & engine news factors</p>
+                    </div>
+                    
+                    <!-- Control Panel -->
+                    <div class="control-panel">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="trackSelect" class="form-label fw-bold">Select Track (2025 Season)</label>
+                                <select class="form-select" id="trackSelect">
+                                    {% for track in tracks %}
+                                    <option value="{{ track }}">{{ track }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">All 24 circuits from the 2025 F1 season available</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="simulationsInput" class="form-label fw-bold">Number of Simulations</label>
+                                <input type="number" class="form-control" id="simulationsInput" value="5000" min="1000" max="50000" step="1000">
+                                <div class="form-text">Higher numbers = more accurate results (slower)</div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button class="btn btn-primary w-100" onclick="runSimulation()">
+                                    <i class="fas fa-play"></i> Run Simulation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Loading Section -->
+                    <div id="loadingSection" class="loading" style="display: none;">
+                        <i class="fas fa-cog"></i>
+                        <h3>Running Monte Carlo Simulation...</h3>
+                        <p>This may take a few moments depending on the number of simulations</p>
+                        <div class="progress mt-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Results Section -->
+                    <div id="resultsSection" class="results-section">
+                        <!-- Summary Card -->
+                        <div class="summary-card">
+                            <h3><i class="fas fa-chart-line"></i> Simulation Summary</h3>
+                            <div id="summaryContent"></div>
+                        </div>
+                        
+                        <!-- Statistics Grid -->
+                        <div class="stats-grid" id="statsGrid"></div>
+                        
+                        <!-- Charts -->
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="chart-container">
+                                    <h4><i class="fas fa-trophy"></i> Win Probabilities</h4>
+                                    <div id="winChart"></div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="chart-container">
+                                    <h4><i class="fas fa-medal"></i> Podium Probabilities</h4>
+                                    <div id="podiumChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="chart-container">
+                                    <h4><i class="fas fa-users"></i> Team Win Probabilities</h4>
+                                    <div id="teamChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Driver Information Section -->
+                        <div class="row mt-4">
+                            <div class="col-lg-12">
+                                <div class="chart-container">
+                                    <h4><i class="fas fa-user-friends"></i> 2025 Driver Information</h4>
+                                    <div class="row" id="driverInfoGrid">
+                                        <div class="col-12">
+                                            <div class="text-center">
+                                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #007bff;"></i>
+                                                <p class="mt-2 text-muted">Loading driver information...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Download Button -->
+                        <div class="text-center mt-4">
+                            <button class="btn btn-secondary" onclick="downloadResults()">
+                                <i class="fas fa-download"></i> Download Results (JSON)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function runSimulation() {
+            const track = document.getElementById('trackSelect').value;
+            const simulations = parseInt(document.getElementById('simulationsInput').value);
+            
+            // Show loading
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            
+            // Run simulation
+            fetch('/run_simulation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    track: track,
+                    simulations: simulations
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                showError('An error occurred while running the simulation: ' + error.message);
+            })
+            .finally(() => {
+                document.getElementById('loadingSection').style.display = 'none';
+            });
+        }
+        
+        function displayResults(data) {
+            // Display summary
+            document.getElementById('summaryContent').innerHTML = data.summary.replace(/\n/g, '<br>');
+            
+            // Display statistics
+            displayStats(data.results);
+            
+            // Display charts
+            Plotly.newPlot('winChart', JSON.parse(data.charts.win_chart).data, JSON.parse(data.charts.win_chart).layout);
+            Plotly.newPlot('podiumChart', JSON.parse(data.charts.podium_chart).data, JSON.parse(data.charts.podium_chart).layout);
+            Plotly.newPlot('teamChart', JSON.parse(data.charts.team_chart).data, JSON.parse(data.charts.team_chart).layout);
+            
+            // Show results
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+        
+        function displayStats(results) {
+            const statsGrid = document.getElementById('statsGrid');
+            const winProbs = results.win_probabilities;
+            
+            // Find top 3 drivers
+            const sortedDrivers = Object.entries(winProbs).sort((a, b) => b[1] - a[1]).slice(0, 3);
+            
+            statsGrid.innerHTML = '';
+            
+            sortedDrivers.forEach((driver, index) => {
+                const [name, probability] = driver;
+                const position = index + 1;
+                const icon = position === 1 ? '🥇' : position === 2 ? '🥈' : '🥉';
+                
+                const statCard = document.createElement('div');
+                statCard.className = 'stat-card';
+                statCard.innerHTML = `
+                    <div class="stat-value">${icon} ${(probability * 100).toFixed(1)}%</div>
+                    <div class="stat-label">${name}</div>
+                    <small class="text-muted">${position}${position === 1 ? 'st' : position === 2 ? 'nd' : 'rd'} Most Likely Winner</small>
+                `;
+                statsGrid.appendChild(statCard);
+            });
+        }
+        
+        function showError(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger';
+            alertDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            
+            document.querySelector('.main-container').insertBefore(alertDiv, document.querySelector('.control-panel'));
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        function downloadResults() {
+            const track = document.getElementById('trackSelect').value;
+            const simulations = parseInt(document.getElementById('simulationsInput').value);
+            
+            fetch('/download_results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    track: track,
+                    simulations: simulations
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Create and download file
+                    const blob = new Blob([data.data], { type: 'application/json' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = data.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                showError('An error occurred while downloading results: ' + error.message);
+            });
+        }
+        
+        // Load driver information on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to track selection
+            document.getElementById('trackSelect').addEventListener('change', function() {
+                this.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 200);
+            });
+            
+            // Load driver information
+            loadDriverInformation();
+        });
+        
+        function loadDriverInformation() {
+            // Load all drivers
+            const drivers = ['Max Verstappen', 'Yuki Tsunoda', 'Lando Norris', 'Oscar Piastri', 'Charles Leclerc', 
+                           'Lewis Hamilton', 'George Russell', 'Kimi Antonelli', 'Alexander Albon', 'Carlos Sainz',
+                           'Nico Hulkenberg', 'Gabriel Bortoleto', 'Liam Lawson', 'Isack Hadjar', 'Lance Stroll',
+                           'Fernando Alonso', 'Esteban Ocon', 'Oliver Bearman', 'Pierre Gasly', 'Franco Colapinto'];
+            
+            Promise.all(drivers.map(driver => 
+                fetch(`/driver_stats/${encodeURIComponent(driver)}`)
+                .then(response => response.json())
+                .catch(error => {
+                    console.error(`Error loading ${driver}:`, error);
+                    return null;
+                })
+            ))
+            .then(driverData => {
+                const validDrivers = driverData.filter(d => d && !d.error);
+                console.log('Loaded drivers:', validDrivers.length);
+                displayDriverInformation(validDrivers);
+            })
+            .catch(error => {
+                console.error('Error loading driver information:', error);
+            });
+        }
+        
+        function displayDriverInformation(drivers) {
+            const driverGrid = document.getElementById('driverInfoGrid');
+            driverGrid.innerHTML = '';
+            
+            if (!drivers || drivers.length === 0) {
+                driverGrid.innerHTML = '<div class="col-12"><p class="text-center text-muted">Loading driver information...</p></div>';
+                return;
+            }
+            
+            // Sort drivers by championship position
+            drivers.sort((a, b) => a.championship_position - b.championship_position);
+            
+            drivers.forEach(driver => {
+                if (!driver || !driver.name) return;
+                
+                const driverCard = document.createElement('div');
+                driverCard.className = 'col-lg-3 col-md-4 col-sm-6';
+                
+                const carFactorClass = driver.car_news_factor > 1.0 ? 'factor-positive' : 
+                                     driver.car_news_factor < 1.0 ? 'factor-negative' : 'factor-neutral';
+                const engineFactorClass = driver.engine_news_factor > 1.0 ? 'factor-positive' : 
+                                        driver.engine_news_factor < 1.0 ? 'factor-negative' : 'factor-neutral';
+                
+                driverCard.innerHTML = `
+                    <div class="driver-card">
+                        <div class="driver-name">${driver.name}</div>
+                        <div class="driver-team">${driver.team}</div>
+                        <div class="driver-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Championship:</span>
+                                <span class="stat-value">#${driver.championship_position} (${driver.points} pts)</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Base Speed:</span>
+                                <span class="stat-value">${driver.base_speed}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Consistency:</span>
+                                <span class="stat-value">${(driver.consistency * 100).toFixed(0)}%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Reliability:</span>
+                                <span class="stat-value">${(driver.reliability * 100).toFixed(0)}%</span>
+                            </div>
+                        </div>
+                        <div class="news-factors">
+                            <div><strong>Car News Factor:</strong> <span class="${carFactorClass}">${driver.car_news_factor.toFixed(3)}</span></div>
+                            <div><strong>Engine News Factor:</strong> <span class="${engineFactorClass}">${driver.engine_news_factor.toFixed(3)}</span></div>
+                        </div>
+                    </div>
+                `;
+                
+                driverGrid.appendChild(driverCard);
+            });
+            
+            console.log(`Displayed ${drivers.length} drivers`);
+        }
+    </script>
+</body>
+</html> 
